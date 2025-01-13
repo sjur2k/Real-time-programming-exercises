@@ -1,0 +1,1 @@
+Since our program is not using mutual exclusivity or similar techniques, we get race conditions and the final value of i is practically random for every execution of the program.
