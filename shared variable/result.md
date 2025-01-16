@@ -3,3 +3,4 @@ Since our program is not using mutual exclusivity or similar techniques, we get 
 
 Task 4
 I should use mutual exlusivity as we want to guarantee that only one thread is manipulating the value of i at once.
+In Go, i chose to implement a for loop with a select statement which listens to the incoming channels. Execution works as expected.
