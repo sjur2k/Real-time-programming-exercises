@@ -13,19 +13,14 @@ struct BoundedBuffer {
     pthread_mutex_t     mtx;
     sem_t               numElements;
     sem_t               capacity;
-    
-    
 };
 
 struct BoundedBuffer* buf_new(int size){
     struct BoundedBuffer* buf = malloc(sizeof(struct BoundedBuffer));
     buf->buf = rb_new(size);
-    
     pthread_mutex_init(&buf->mtx, NULL);
-    // TODO: initialize semaphores
-    //sem_init(&buf->capacity,      0, /*starting value?*/);
-	//sem_init(&buf->numElements,   0, /*starting value?*/);
-    
+    sem_init(&buf->capacity,      0, size);
+	sem_init(&buf->numElements,   0, 0);
     return buf;    
 }
 
@@ -43,18 +38,21 @@ void buf_destroy(struct BoundedBuffer* buf){
 void buf_push(struct BoundedBuffer* buf, int val){    
     // TODO: wait for there to be room in the buffer
     // TODO: make sure there is no concurrent access to the buffer internals
-    
+    sem_wait(&buf->capacity);
+    pthread_mutex_lock(&buf->mtx);
     rb_push(buf->buf, val);
-    
-    
+    pthread_mutex_unlock(&buf->mtx);
+    sem_post(&buf->numElements);
     // TODO: signal that there are new elements in the buffer    
 }
 
 int buf_pop(struct BoundedBuffer* buf){
     // TODO: same, but different?
-    
+    sem_wait(&buf->numElements);
+    pthread_mutex_lock(&buf->mtx);
     int val = rb_pop(buf->buf);    
-    
+    pthread_mutex_unlock(&buf->mtx);    
+    sem_post(&buf->capacity);
     return val;
 }
 
@@ -76,7 +74,7 @@ void* producer(void* args){
 void* consumer(void* args){
     struct BoundedBuffer* buf = (struct BoundedBuffer*)(args);
     
-    // give the producer a 1-second head start
+    // The consumer is set to lag the producer by a second
     nanosleep(&(struct timespec){1, 0}, NULL);
     while(1){
         int val = buf_pop(buf);
@@ -93,10 +91,10 @@ int main(){
     pthread_t consumer_thr;
     pthread_create(&producer_thr, NULL, producer, buf);
     pthread_create(&consumer_thr, NULL, consumer, buf);
-    
+
     pthread_join(producer_thr, NULL);
     pthread_cancel(consumer_thr);
-    
+
     buf_destroy(buf);
     
     return 0;
