@@ -5,13 +5,8 @@ package main
 import (
 	. "fmt"
 	"runtime"
-	"sync"
 	"time"
 )
-
-type SafeCounter struct {
-	mu sync.Mutex
-}
 
 var i = 0
 
