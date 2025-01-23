@@ -10,6 +10,7 @@ const (
 	t_sleep time.Duration = time.Second
 	bufSize = 1024
 	IP="192.168.0.118" //Change this if running at RT-lab
+	BCAST_IP="192.168.0.255" //Change this if running at RT-lab
 	PortDwn = 20001
 	PortUp = 20000
 )
