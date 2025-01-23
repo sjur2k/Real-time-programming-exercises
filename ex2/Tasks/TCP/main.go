@@ -71,7 +71,7 @@ func SendMsg(conn net.Conn, ch chan[]byte, msgType int){
 
 func SendStruct(conn net.Conn, ch chan []byte){
 	time.Sleep(time.Second*2)
-	p:=Person{"Sjur Groven",24,false}
+	p:=Person{"Ola Nordmann",36,false}
 	data,_:=json.Marshal(p)
 	data=append(data,0x00)
 	ch<-data
