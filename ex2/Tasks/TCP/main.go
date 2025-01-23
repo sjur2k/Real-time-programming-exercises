@@ -4,6 +4,7 @@ import (
 	. "fmt"
 	"net"
 	"time"
+	"encoding/json"
 )
 
 const (
@@ -16,6 +17,12 @@ const (
 	FIXED_MESSAGE_LENGTH = 0
 	ZERO_DELIMITED_MESSAGE = 1
 )
+
+type Person struct{
+	Name string			`json:"name"`
+	Age int 			`json: "age"`
+	LikesPickles bool 	`json: "likesPickles"`
+}
 
 func AddrTCP(ip string,port int)(*net.TCPAddr, error){
 	addr,err := net.ResolveTCPAddr("tcp4",Sprintf("%s:%d", ip, port))
@@ -32,7 +39,20 @@ func DelimMsg(msg string)([]byte){
 	return []byte(Sprintf("%s\x00",msg))
 }
 
-func sendMsg(conn net.Conn, ch chan[]byte, msgType int){
+func ReceiveMsg(conn net.Conn,ch chan[]byte){
+	defer conn.Close()
+	buf := make([]byte,BUF_SIZE)
+	for{
+		n, err := conn.Read(buf)
+		if err!=nil{
+			Println("Error receiving message:\n",err)
+			return
+		}
+		ch<-buf[0:n]
+	}
+}
+
+func SendMsg(conn net.Conn, ch chan[]byte, msgType int){
 	switch msgType{
 	case FIXED_MESSAGE_LENGTH:
 		for{
@@ -49,21 +69,17 @@ func sendMsg(conn net.Conn, ch chan[]byte, msgType int){
 	}
 }
 
-func receiveMsg(conn net.Conn,ch chan[]byte){
-	defer conn.Close()
-	buf := make([]byte,BUF_SIZE)
-	for{
-		n, err := conn.Read(buf)
-		if err!=nil{
-			Println("Error receiving message:\n",err)
-			return
-		}
-		ch<-buf[0:n]
-	}
+func SendStruct(conn net.Conn, ch chan []byte){
+	time.Sleep(time.Second*2)
+	p:=Person{"Sjur Groven",24,false}
+	data,_:=json.Marshal(p)
+	data=append(data,0x00)
+	ch<-data
+	conn.Write(<-ch)
 }
 
 func main(){
-	addrServer, err := AddrTCP(REMOTE_IP, PORT_FIXED)
+	addrServer, err := AddrTCP(REMOTE_IP, PORT_DELIM)
 	if err != nil {
 		Println("Error reading buffer:\n",err)
 		return
@@ -79,8 +95,11 @@ func main(){
 	chanDwn := make(chan[]byte,BUF_SIZE)
 	chanUp := make(chan[]byte,BUF_SIZE)
 	
-	go sendMsg(connTCP, chanUp, FIXED_MESSAGE_LENGTH)
-	go receiveMsg(connTCP, chanDwn)
+	go SendMsg(connTCP, chanUp, FIXED_MESSAGE_LENGTH)
+	go ReceiveMsg(connTCP, chanDwn)
+	
+	go SendStruct(connTCP,chanUp)
+	
 
 	for{
 		select{
