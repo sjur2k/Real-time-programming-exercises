@@ -33,15 +33,23 @@ class Resource(T) {
     }
     
     T allocate(int priority){
-        if(!busy){
-            
+        if(busy){
+            mtx.wait();
+            busy=true;
+            return value;
+            mtx.notify();
         }
-        mtx.wait();
-        return value;
+        else {
+            busy=true;
+            return value;
+        }
     }
     
     void deallocate(T v){
+        mtx.wait();
         value = v;
+        mtx.notify();
+        busy=false;
     }
 }
 
