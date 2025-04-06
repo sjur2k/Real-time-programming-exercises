@@ -39,12 +39,23 @@ class Resource(T) {
         cond    = new Condition(mtx);
     }
     
-    T allocate(int id, int priority){
+    T allocate(int id, int priority) {
+        mtx.lock();
+        queue.insert(id, priority);
+        // Wait until it's our turn.
+        while (queue.front() != id || queue.existsHigherPriority(id, priority)) {
+            cond.wait();
+        }
+        mtx.unlock();
         return value;
     }
     
-    void deallocate(T v){
+    void deallocate(T v) {
+        mtx.lock();
         value = v;
+        queue.popFront();
+        cond.notifyAll();
+        mtx.unlock();
     }
 }
 
@@ -91,6 +102,19 @@ struct PriorityQueue(T) {
         return queue.empty;
     }
     
+    bool existsHigherPriority(int id, int priority){
+        if (priority==1) {
+            return false;
+        } else {
+            foreach (ref e; queue){
+                if (e.priority == 1 && e.val != id) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     string toString(){
         return format!("%s([%(%s, %)])")(typeof(this).stringof, queue);
     }
