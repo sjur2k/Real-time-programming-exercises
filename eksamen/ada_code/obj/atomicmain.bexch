@@ -1,0 +1,23 @@
+[GENERATED OBJECT FILE]
+b__atomicmain.o
+[PROJECT FILES]
+D:\Local_code_projects\Sanntid\eksamen\ada_code\default.gpr
+20250730212936 5ab7323258f05f82b3806393fb72632b
+[BOUND OBJECT FILES]
+D:\Local_code_projects\Sanntid\eksamen\ada_code\obj\atomic.o
+D:\Local_code_projects\Sanntid\eksamen\ada_code\obj\atomicMain.o
+[GENERATED SOURCE FILES]
+b__atomicmain.ads
+b__atomicmain.adb
+b__atomicmain.ali
+[RESULTING OPTIONS]
+-LD:\Local_code_projects\Sanntid\eksamen\ada_code\obj\
+-LD:\Local_code_projects\Sanntid\eksamen\ada_code\obj\
+-LD:/gnat/lib/gcc/x86_64-w64-mingw32/10.3.1/adalib/
+-static
+-static-libgcc
+D:/gnat/lib/gcc/x86_64-w64-mingw32/10.3.1/adalib/libgnarl.a
+D:/gnat/lib/gcc/x86_64-w64-mingw32/10.3.1/adalib/libgnat.a
+-Xlinker
+--stack=0x200000,0x1000
+-mthreads
